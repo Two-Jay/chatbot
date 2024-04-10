@@ -15,27 +15,20 @@ class Function(ABC):
 			}
 		self.input_schema = input_schema
 
-		@abstractmethod
-		def __repr__(self):
-			pass
-
-		@abstractmethod
-		def __str__(self):
-			pass
-
 class Anthropic_Function(Function):
 	def __init__(self, Parameters : Function_Information):
 		self.name = Parameters.name
 		self.description = Parameters.description
 		self.input_schema = Parameters.input_schema
 
-	def __repr__(self):
-		return json.dumps(self.__dict__())
-
-	def __str__(self):
-		return self.__repr__()
-
 	def __dict__(self):
+		return {
+			"name": self.name,
+			"description": self.description,
+			"input_schema": self.input_schema
+		}
+
+	def to_json(self):
 		return {
 			"name": self.name,
 			"description": self.description,

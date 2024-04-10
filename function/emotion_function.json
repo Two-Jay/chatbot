@@ -1,5 +1,5 @@
 {
-  "name": "get_output_with _emotion", 
+  "name": "get_output_with_emotion", 
   "description": "This function will return the output with emotion, based on the input given. your output will be {'output' : 'output line', 'emotion' : 'emotion'}. emotion types are [normal, joy, sad], and the default type is 'normal'.",     
   "input_schema": {
       "type": "object",

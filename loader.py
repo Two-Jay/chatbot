@@ -31,7 +31,7 @@ def load_llmfunction(filename : str = None, file_type : FileType = FileType.JSON
 		name = data.get("name")
 		description = data.get("description")
 		input_schema = data.get("input_schema")
-		return Anthropic_Function(Function_Information(name, description, input_schema))
+		return Anthropic_Function(Function_Information(name, description, input_schema)).__dict__()
 
 def load_prompt(filename):
 	path = os.getcwd() + f"/prompt/{filename}"

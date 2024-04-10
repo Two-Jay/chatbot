@@ -40,10 +40,12 @@ def main():
 		client=claude_client,
 		system_prompt=load_prompt("chat_prompt.xml"),
 		memory_turn_size=3,
-		moderation_caller=gpt_client,
-		functions=[load_llmfunction("emotion_function.json")]
+		moderation_caller=gpt_client
   )
+	emt = load_llmfunction("emotion_function.json")
+	inf.add_function(emt)
 	run_chatting(inf)
+
 
 if __name__ == "__main__":
 	main()

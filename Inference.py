@@ -48,7 +48,7 @@ def randomize_static_message(static_prefix="앗.. 미안해요. 저 루루야는
 	return static_prefix + random.choice(bucket)
 
 class inferencor():
-	def __init__(self, client : Anthropic, system_prompt : str = "You are a helpful assistant.", memory_turn_size=5, moderation_caller=None, functions = List[Function]):
+	def __init__(self, client : Anthropic, system_prompt : str = "You are a helpful assistant.", memory_turn_size=5, moderation_caller=None, functions : List[Function] = None):
 		self.client = client
 		self.memory = Memory(memory_turn_size)
 		self.system_prompt = system_prompt
@@ -62,7 +62,7 @@ class inferencor():
 			response = self.static_message_invalid()
 			self.memory.remember("assistant", response)
 			return response
-		response = self.call_client_message_create(only_message=True, with_function=True)
+		response = self.call_client_message_create(only_message=True, with_function=False)
 		if self.moderation_client and self.moderate(response) == False:
 			response = self.static_message_invalid()
 			self.memory.remember("assistant", response)
@@ -73,6 +73,9 @@ class inferencor():
 
 	def recall(self):
 		return self.memory.recall()
+
+	def add_tool(self, tool):
+		self.functions.append(tool)
 
 	def moderate(self, text):
 		if isinstance(self.moderation_client, OpenAI) and not OpenAI_moderation_checker(self.moderation_client, text):
@@ -90,7 +93,7 @@ class inferencor():
 					messages=self.memory.recall(),
 					system=self.system_prompt,
 					max_tokens=max_tokens,
-					model=LLMModel.CLAUDE_3_OPUS.value,
+					model=LLMModel.CLAUDE_3_SONNET.value,
 					tools=self.functions
 				)
 			else:
@@ -98,7 +101,7 @@ class inferencor():
 					messages=self.memory.recall(),
 					system=self.system_prompt,
 					max_tokens=max_tokens,
-					model=LLMModel.CLAUDE_3_OPUS.value
+					model=LLMModel.CLAUDE_3_SONNET.value
 				)
 			if only_message:
 				return response.content[0].text
