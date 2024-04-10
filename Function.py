@@ -30,12 +30,14 @@ class Anthropic_Function(Function):
 		self.input_schema = Parameters.input_schema
 
 	def __repr__(self):
-		return json.dumps({
-			"name": self.name,
-			"description": self.description,
-			"input_schema": self.input_schema
-		})
+		return json.dumps(self.__dict__())
 
 	def __str__(self):
 		return self.__repr__()
 
+	def __dict__(self):
+		return {
+			"name": self.name,
+			"description": self.description,
+			"input_schema": self.input_schema
+		}

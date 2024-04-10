@@ -41,7 +41,7 @@ def main():
 		system_prompt=load_prompt("chat_prompt.xml"),
 		memory_turn_size=3,
 		moderation_caller=gpt_client,
-		functions=[str(load_llmfunction("emotion_function.json"))]
+		functions=[load_llmfunction("emotion_function.json")]
   )
 	run_chatting(inf)
 
