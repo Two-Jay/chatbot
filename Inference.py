@@ -62,7 +62,7 @@ class inferencor():
 			response = self.static_message_invalid()
 			self.memory.remember("assistant", response)
 			return response
-		response = self.call_client(only_message=True, with_function=True)
+		response = self.call_client_message_create(only_message=True, with_function=True)
 		if self.moderation_client and self.moderate(response) == False:
 			response = self.static_message_invalid()
 			self.memory.remember("assistant", response)
@@ -82,7 +82,7 @@ class inferencor():
 	def add_function(self, function : Function):
 		self.functions.append(function)
 
-	def call_client(self, with_function=False, max_tokens=350, only_message=False):
+	def call_client_message_create(self, with_function=False, max_tokens=350, only_message=False):
 		response = None
 		if isinstance(self.client, Anthropic):
 			if with_function == True:
