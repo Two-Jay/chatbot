@@ -32,6 +32,8 @@ def load_llmfunction(filename : str = None, file_type : FileType = FileType.JSON
 		description = data.get("description")
 		input_schema = data.get("input_schema")
 		return Anthropic_Function(Function_Information(name, description, input_schema)).__dict__()
+	elif function_type == FunctionType.OPENAI:
+		raise NotImplementedError("OpenAI function is not supported yet.")
 
 def load_prompt(filename):
 	path = os.getcwd() + f"/prompt/{filename}"
