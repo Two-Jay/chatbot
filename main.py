@@ -1,6 +1,7 @@
 from anthropic import Anthropic
 from openai import OpenAI
 from Inference import Memory, inferencor
+from loader import load_llmfunction, load_prompt
 import os
 import signal
 
@@ -28,12 +29,11 @@ gpt_client = OpenAI(
 	api_key=envs.get("OPENAI_API_KEY"),
 )
 
-def load_prompt(filename):
-	path = os.getcwd() + f"/prompt/{filename}"
-	if not os.path.exists(path):
-		raise FileNotFoundError(f"File {filename} not found.")
-	with open(path, "r", encoding="utf-8") as f:
-		return f.read()
+def run_chatting(inf : inferencor):
+	while True:
+		message = input("You: ")
+		response = inf.inference(message)
+		print(f"Assistant: {response}")
 
 def main():
 	inf = inferencor(
@@ -41,11 +41,9 @@ def main():
 		system_prompt=load_prompt("chat_prompt.xml"),
 		memory_turn_size=3,
 		moderation_caller=gpt_client,
+		functions=[str(load_llmfunction("emotion_function.json"))]
   )
-	while True:
-		message = input("You: ")
-		response = inf.inference(message)
-		print("Assistant:", response)
+	run_chatting(inf)
 
 if __name__ == "__main__":
 	main()

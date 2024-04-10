@@ -2,6 +2,8 @@ from anthropic import Anthropic
 from openai import OpenAI
 import random
 from enum import Enum
+from Function import Function
+from typing import List
 
 class LimitedQueue:
 	def __init__(self, max_size):
@@ -34,10 +36,10 @@ class Memory:
 		return len(self.memory)
 
 class LLMModel(Enum):
-  CLAUDE_3_OPUS = "claude-3-opus-20240229"
-  CLAUDE_3_SONNET = "claude-3-sonnet-20240229"
-  CLAUDE_3_HAIKU = "claude-3-haiku-20240307"
-  
+	CLAUDE_3_OPUS = "claude-3-opus-20240229"
+	CLAUDE_3_SONNET = "claude-3-sonnet-20240229"
+	CLAUDE_3_HAIKU = "claude-3-haiku-20240307"
+	
 class ModerationModel(Enum):
 	OPEN_AI = "openai"
 
@@ -46,26 +48,21 @@ def randomize_static_message(static_prefix="앗.. 미안해요. 저 루루야는
 	return static_prefix + random.choice(bucket)
 
 class inferencor():
-	def __init__(self, client : Anthropic, system_prompt : str = "You are a helpful assistant.", memory_turn_size=5, moderation_caller=None):
+	def __init__(self, client : Anthropic, system_prompt : str = "You are a helpful assistant.", memory_turn_size=5, moderation_caller=None, functions = List[Function]):
 		self.client = client
 		self.memory = Memory(memory_turn_size)
 		self.system_prompt = system_prompt
 		self.moderation_client = moderation_caller
 		self.static_message_invalid = randomize_static_message
+		self.functions = functions or []
 
-	def inference(self, message : str, role : str = "user", max_tokens=300, function=None):
+	def inference(self, message : str, role : str = "user", max_tokens=350, function=None):
 		self.memory.remember(role, message)
 		if self.moderation_client and self.moderate(message) == False:
 			response = self.static_message_invalid()
 			self.memory.remember("assistant", response)
 			return response
-		response = self.client.messages.create(
-			messages=self.memory.recall(),
-			system=self.system_prompt,
-			max_tokens=max_tokens,
-			model=LLMModel.CLAUDE_3_OPUS.value,
-		)
-		response = response.content[0].text
+		response = self.inference(only_message=True)
 		if self.moderation_client and self.moderate(response) == False:
 			response = self.static_message_invalid()
 			self.memory.remember("assistant", response)
@@ -81,6 +78,33 @@ class inferencor():
 		if isinstance(self.moderation_client, OpenAI) and not OpenAI_moderation_checker(self.moderation_client, text):
 			return False
 		return True
+
+	def add_function(self, function : Function):
+		self.functions.append(function)
+
+	def inference(self, with_function=False, max_tokens=350, only_message=False):
+		response = None
+		if isinstance(self.client, Anthropic):
+			if with_function == True:
+				response = self.client.beta.tools.messages.create(
+					messages=self.memory.recall(),
+					system=self.system_prompt,
+					max_tokens=max_tokens,
+					model=LLMModel.CLAUDE_3_OPUS.value,
+					tools=self.functions
+				)
+			else:
+				response = self.client.messages.create(
+					messages=self.memory.recall(),
+					system=self.system_prompt,
+					max_tokens=max_tokens,
+					model=LLMModel.CLAUDE_3_OPUS.value
+				)
+			if only_message:
+				return response.content[0].text
+			return response
+		else:
+			raise NotImplementedError("Only Anthropic is supported for now.")
 
 def OpenAI_moderation_checker(caller, output, threshould = 0.4) -> bool:
 	result = caller.moderations.create(input=output)
