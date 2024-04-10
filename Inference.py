@@ -53,7 +53,7 @@ class inferencor():
 		self.moderation_client = moderation_caller
 		self.static_message_invalid = randomize_static_message
 
-	def inference(self, message : str, role : str = "user", max_tokens=300):
+	def inference(self, message : str, role : str = "user", max_tokens=300, function=None):
 		self.memory.remember(role, message)
 		if self.moderation_client and self.moderate(message) == False:
 			response = self.static_message_invalid()
